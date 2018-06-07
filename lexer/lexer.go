@@ -1,18 +1,19 @@
-// Lexer based on Rob Pike's functional lexing approach
-//     Source: https://talks.golang.org/2011/lex.slide
-
-package main
+// Lexer for Quade based on Rob Pike's functional lexing approach
+// Source: https://talks.golang.org/2011/lex.slide
+package lexer
 
 import (
-    "fmt"
-    "unicode"
+	"fmt"
+	"log"
+	"unicode"
 	"unicode/utf8"
 )
 
 type TokenType int
 
 const (
-	StartQuad TokenType = iota
+	Error TokenType = iota
+	StartQuad
 	CloseQuad
 
 	Temporary
@@ -21,6 +22,16 @@ const (
 	// Operations
 	OpAddSigned
 )
+
+var TokenString = map[TokenType]string{
+	Error:     `Error`,
+	StartQuad: `StartQuad`,
+	CloseQuad: `CloseQuad`,
+
+	Temporary:   `Temporary`,
+	Identifier:  `Identifier`,
+	OpAddSigned: `OpAddSigned`,
+}
 
 type Token struct {
 	Type  TokenType
@@ -36,6 +47,7 @@ type lexer struct {
 	tokens   chan Token
 }
 
+const Debug = 1
 const eof = -1
 
 func Lex(src string) chan Token {
@@ -51,13 +63,18 @@ func lex(src string, start lexState) (*lexer, chan Token) {
 		tokens:   make(chan Token),
 	}
 
+	debug("Starting lexer")
+
 	go l.run()
 	return l, l.tokens
 }
 
 func startState(l *lexer) lexState {
+	debug("STATE: Start")
+
 	for {
-		switch r := l.next(); r {
+		r := l.next()
+		switch r {
 		case '(':
 			l.emit(StartQuad)
 			return insideQuadIR
@@ -66,7 +83,7 @@ func startState(l *lexer) lexState {
 		case ' ', '\t', '\n':
 			continue
 		case eof:
-			break
+			return nil
 		}
 	}
 
@@ -74,6 +91,8 @@ func startState(l *lexer) lexState {
 }
 
 func insideComment(l *lexer) lexState {
+	debug("STATE: Inside Comment")
+
 	for {
 		switch r := l.next(); r {
 		default:
@@ -87,11 +106,15 @@ func insideComment(l *lexer) lexState {
 }
 
 func temporary(l *lexer) lexState {
-    l.emit(Temporary)
-    return nil
+	debug("STATE: Temporary")
+
+	l.emit(Temporary)
+	return nil
 }
 
 func insideQuadIR(l *lexer) lexState {
+	debug("STATE: Inside Quad IR")
+
 	for {
 		switch r := l.next(); r {
 		case eof:
@@ -104,7 +127,7 @@ func insideQuadIR(l *lexer) lexState {
 				return temporary
 			}
 
-			return nil 
+			return nil
 			// case digit
 			//      return number
 			// case default
@@ -114,39 +137,56 @@ func insideQuadIR(l *lexer) lexState {
 }
 
 func (l *lexer) run() {
+	debug("Running...")
+
 	for state := startState; state != nil; {
 		state = state(l)
 	}
 
 	close(l.tokens)
+	debug("Done")
 }
 
 func (l *lexer) emit(token TokenType) {
-	l.tokens <- Token{token, l.input[l.start:l.position]}
+	value := l.input[l.start:l.position]
+
+	debug(fmt.Sprintf("Token: %s, Value: %s", TokenString[token], value))
+
+	l.tokens <- Token{token, value}
 	l.start = l.position
 }
 
-func (l *lexer) next() (rune) {
-	if l.position > len(l.input) {
+func (l *lexer) next() rune {
+	r, width := utf8.DecodeRuneInString(l.input[l.position:])
+
+	if r == utf8.RuneError {
 		return eof
 	}
 
-	r, width := utf8.DecodeRuneInString(l.input[l.position:])
 	l.position += width
 	return r
 }
 
-func (l *lexer) peek() (rune) {
-    r := l.next()
+func (l *lexer) peek() rune {
+	r := l.next()
 	l.position -= utf8.RuneLen(r)
 	return r
 }
 
 func (l *lexer) unput(r rune) {
-    l.position -= utf8.RuneLen(r)
+	l.position -= utf8.RuneLen(r)
 }
 
-func (l *lexer) err(msg string) (lexState) {
-    fmt.Println(msg)
-    return nil
+func (l *lexer) err(msg string) lexState {
+	l.tokens <- Token{Error, msg}
+	l.start = l.position
+	return nil
+}
+
+func debug(msg string) {
+	if Debug != 1 {
+		return
+	}
+
+	log.Printf(msg)
 }
