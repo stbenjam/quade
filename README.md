@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/stbenjam/quade.svg?branch=master)](https://travis-ci.org/stbenjam/quade)
+
 # Quade
 
 Quade an emulator for quadruple format intermediate representation used by CSCI
