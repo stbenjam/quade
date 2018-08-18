@@ -3,7 +3,7 @@ language: go
 
 before_install:
   - go get -u golang.org/x/tools/cmd/goyacc
-  - goyacc -o parser/parser.go parser/parser.y
+  - go generate
 
 go:
   - "1.10.x"
