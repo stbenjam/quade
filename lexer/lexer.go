@@ -4,75 +4,14 @@ package lexer
 
 import (
 	"fmt"
+	. "github.com/stbenjam/quade/parser"
 	"log"
 	"unicode"
 	"unicode/utf8"
 )
 
-type TokenType int
-
-const (
-	Error TokenType = iota
-	OpenParen
-	CloseParen
-	Comma
-	Temporary
-	Identifier
-	Number
-	OpAddressOf
-	OpLoadWord
-	OpLoadHalfWord
-	OpLoadSignedHalfWord
-	OpLoadByte
-	OpLoadSignedByte
-	OpStoreWord
-	OpStoreHalfWord
-	OpStoreByte
-	OpMultSignedWord
-	OpMultUnsignedWord
-	OpDivSignedWord
-	OpDivUnsignedWord
-	OpRemSignedWord
-	OpRemUnsignedWord
-	OpAddSignedWord
-	OpAddUnsignedWord
-	OpSubSignedWord
-	OpSubUnsignedWord
-	OpLeftShiftWord
-	OpRightShiftSignedWord
-	OpRightShiftUnsignedWord
-	OpLtSignedWord
-	OpLtUnsignedWord
-	OpLeSignedWord
-	OpLeUnsignedWord
-	OpGeSignedWord
-	OpGeUnsignedWord
-	OpGtSignedWord
-	OpGtUnsignedWord
-	OpEqWord
-	OpNeWord
-	OpBitwiseAndWord
-	OpBitwiseXorWord
-	OpBitwiseOrWord
-	OpUnaryMinus
-	OpUnaryLogicalNegation
-	OpUnaryBitwiseNegation
-	OpConstInt
-	OpCastWordToHalfWord
-	OpCastWordToByte
-	OpCastHalfWordToUnsignedWord
-	OpCastHalfWordToSignedWord
-	OpCastByteToUnsignedWord
-	OpCastByteToSignedWord
-	OpLabel
-	OpGoto
-	OpGotoIfFalse
-	OpGotoIfTrue
-	OpPhi
-)
-
 type Token struct {
-	Type  TokenType
+	Type  int
 	Value string
 }
 
@@ -87,7 +26,7 @@ type lexer struct {
 	tokens   chan Token
 }
 
-var TokenString = map[TokenType]string{
+var TokenString = map[int]string{
 	Error:                        `Error`,
 	OpenParen:                    `OpenParen`,
 	CloseParen:                   `CloseParen`,
@@ -146,8 +85,6 @@ var TokenString = map[TokenType]string{
 	OpGotoIfTrue:                 `OpGotoIfTrue`,
 	OpPhi:                        `OpPhi`,
 }
-
-
 
 const Debug = 1
 const eof = -1
@@ -405,7 +342,7 @@ func (l *lexer) value() string {
 	return l.input[l.start:l.position]
 }
 
-func (l *lexer) emit(token TokenType) {
+func (l *lexer) emit(token int) {
 	debug(fmt.Sprintf("Token: %s, Value: %s", TokenString[token], l.value()))
 
 	l.tokens <- Token{token, l.value()}

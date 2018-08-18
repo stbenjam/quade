@@ -2,33 +2,34 @@ package lexer_test
 
 import (
 	"github.com/stbenjam/quade/lexer"
+	. "github.com/stbenjam/quade/parser"
 	"testing"
 )
 
 func TestTokens(t *testing.T) {
-	expectTokens(t, "(", lexer.OpenParen)
-	expectTokens(t, ")", lexer.CloseParen)
-	expectTokens(t, ",", lexer.Comma)
+	expectTokens(t, "(", OpenParen)
+	expectTokens(t, ")", CloseParen)
+	expectTokens(t, ",", Comma)
 
-	expectTokens(t, "_identifier", lexer.Identifier)
-	expectTokens(t, "9number", lexer.Number, lexer.Identifier)
-	expectTokens(t, "number9", lexer.Identifier)
+	expectTokens(t, "_identifier", Identifier)
+	expectTokens(t, "9number", Number, Identifier)
+	expectTokens(t, "number9", Identifier)
 
-	expectTokens(t, "t0", lexer.Temporary)
-	expectTokens(t, "t01892", lexer.Temporary)
-	expectTokens(t, "t99", lexer.Temporary)
-	expectTokens(t, "t9a", lexer.Identifier)
-	expectTokens(t, "t9,a", lexer.Temporary, lexer.Comma, lexer.Identifier)
-	expectTokens(t, "t", lexer.Identifier)
+	expectTokens(t, "t0", Temporary)
+	expectTokens(t, "t01892", Temporary)
+	expectTokens(t, "t99", Temporary)
+	expectTokens(t, "t9a", Identifier)
+	expectTokens(t, "t9,a", Temporary, Comma, Identifier)
+	expectTokens(t, "t", Identifier)
 
-	expectTokens(t, "(addSignedWord, t0, t1, t2)", lexer.OpenParen, lexer.OpAddSignedWord, lexer.Comma, lexer.Temporary, lexer.Comma, lexer.Temporary, lexer.Comma, lexer.Temporary, lexer.CloseParen)
+	expectTokens(t, "(addSignedWord, t0, t1, t2)", OpenParen, OpAddSignedWord, Comma, Temporary, Comma, Temporary, Comma, Temporary, CloseParen)
 }
 
 func TestComments(t *testing.T) {
-    expectTokens(t, "(  # (ignored, t0, t1, t2)", lexer.OpenParen)
+	expectTokens(t, "(  # (ignored, t0, t1, t2)", OpenParen)
 }
 
-func expectTokens(t *testing.T, input string, expectedTokens ...lexer.TokenType) {
+func expectTokens(t *testing.T, input string, expectedTokens ...int) {
 	tokenStream := lexer.Lex(input)
 
 	for _, expectedToken := range expectedTokens {
