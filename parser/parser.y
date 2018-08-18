@@ -67,5 +67,16 @@ statement
 
 %%
 
+// TokenName returns the string value of a token.
+func TokenName(tokenValue int) string {
+  // This is touching yacc internals, but I don't want to write a separate
+  // lookup function.  Logic here:
+  //   We don't know where token value will start, so subtract first
+  //   token (Error) and add where the index starts (+3 later)
+  tokenIndex := tokenValue - Error + 3;
+  return yyToknames[tokenIndex];
+}
+
+
 //func (l *Lexer) Lex(lval *yySymType) int {
 //}

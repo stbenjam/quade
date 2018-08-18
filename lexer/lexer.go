@@ -1,5 +1,7 @@
-// Lexer for Quade based on Rob Pike's functional lexing approach
-// Source: https://talks.golang.org/2011/lex.slide
+// Lexer for Quade
+//   Based on Rob Pike's functional lexing approach
+//   Source: https://talks.golang.org/2011/lex.slide
+
 package lexer
 
 import (
@@ -24,66 +26,6 @@ type lexer struct {
 	start    int
 	position int
 	tokens   chan Token
-}
-
-var TokenString = map[int]string{
-	Error:                        `Error`,
-	OpenParen:                    `OpenParen`,
-	CloseParen:                   `CloseParen`,
-	Comma:                        `Comma`,
-	Temporary:                    `Temporary`,
-	Identifier:                   `Identifier`,
-	Number:                       `Number`,
-	OpAddressOf:                  `OpAddressOf`,
-	OpLoadWord:                   `OpLoadWord`,
-	OpLoadHalfWord:               `OpLoadHalfWord`,
-	OpLoadSignedHalfWord:         `OpLoadSignedHalfWord`,
-	OpLoadByte:                   `OpLoadByte`,
-	OpLoadSignedByte:             `OpLoadSignedByte`,
-	OpStoreWord:                  `OpStoreWord`,
-	OpStoreHalfWord:              `OpStoreHalfWord`,
-	OpStoreByte:                  `OpStoreByte`,
-	OpMultSignedWord:             `OpMultSignedWord`,
-	OpMultUnsignedWord:           `OpMultUnsignedWord`,
-	OpDivSignedWord:              `OpDivSignedWord`,
-	OpDivUnsignedWord:            `OpDivUnsignedWord`,
-	OpRemSignedWord:              `OpRemSignedWord`,
-	OpRemUnsignedWord:            `OpRemUnsignedWord`,
-	OpAddSignedWord:              `OpAddSignedWord`,
-	OpAddUnsignedWord:            `OpAddUnsignedWord`,
-	OpSubSignedWord:              `OpSubSignedWord`,
-	OpSubUnsignedWord:            `OpSubUnsignedWord`,
-	OpLeftShiftWord:              `OpLeftShiftWord`,
-	OpRightShiftSignedWord:       `OpRightShiftSignedWord`,
-	OpRightShiftUnsignedWord:     `OpRightShiftUnsignedWord`,
-	OpLtSignedWord:               `OpLtSignedWord`,
-	OpLtUnsignedWord:             `OpLtUnsignedWord`,
-	OpLeSignedWord:               `OpLeSignedWord`,
-	OpLeUnsignedWord:             `OpLeUnsignedWord`,
-	OpGeSignedWord:               `OpGeSignedWord`,
-	OpGeUnsignedWord:             `OpGeUnsignedWord`,
-	OpGtSignedWord:               `OpGtSignedWord`,
-	OpGtUnsignedWord:             `OpGtUnsignedWord`,
-	OpEqWord:                     `OpEqWord`,
-	OpNeWord:                     `OpNeWord`,
-	OpBitwiseAndWord:             `OpBitwiseAndWord`,
-	OpBitwiseXorWord:             `OpBitwiseXorWord`,
-	OpBitwiseOrWord:              `OpBitwiseOrWord`,
-	OpUnaryMinus:                 `OpUnaryMinus`,
-	OpUnaryLogicalNegation:       `OpUnaryLogicalNegation`,
-	OpUnaryBitwiseNegation:       `OpUnaryBitwiseNegation`,
-	OpConstInt:                   `OpConstInt`,
-	OpCastWordToHalfWord:         `OpCastWordToHalfWord`,
-	OpCastWordToByte:             `OpCastWordToByte`,
-	OpCastHalfWordToUnsignedWord: `OpCastHalfWordToUnsignedWord`,
-	OpCastHalfWordToSignedWord:   `OpCastHalfWordToSignedWord`,
-	OpCastByteToUnsignedWord:     `OpCastByteToUnsignedWord`,
-	OpCastByteToSignedWord:       `OpCastByteToSignedWord`,
-	OpLabel:                      `OpLabel`,
-	OpGoto:                       `OpGoto`,
-	OpGotoIfFalse:                `OpGotoIfFalse`,
-	OpGotoIfTrue:                 `OpGotoIfTrue`,
-	OpPhi:                        `OpPhi`,
 }
 
 const Debug = 1
@@ -299,6 +241,10 @@ func identifierOrOperation(l *lexer) lexState {
 		l.emit(OpGotoIfTrue)
 	case "phi":
 		l.emit(OpPhi)
+    case "procBegin":
+        l.emit(OpProcBegin)
+    case "procEnd":
+        l.emit(OpProcEnd)
 
 	default:
 		l.emit(Identifier)
@@ -343,7 +289,7 @@ func (l *lexer) value() string {
 }
 
 func (l *lexer) emit(token int) {
-	debug(fmt.Sprintf("Token: %s, Value: %s", TokenString[token], l.value()))
+	debug(fmt.Sprintf("Token: %s, Value: %s", TokenName(token), l.value()))
 
 	l.tokens <- Token{token, l.value()}
 	l.start = l.position
