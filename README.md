@@ -15,6 +15,14 @@ Quadruples consist of up to four fields, typically:
 
 Comments begin with `#` and end on a newline.
 
+## Building
+
+Run `make`, run quade with a filename argument, see test/ for example IR:
+
+```
+./quade <filename>
+```
+
 ## Symbol and String tables
 
 TODO
